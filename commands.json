@@ -12,6 +12,7 @@
         "open valorant": "Start-Process \"C:\\Riot Games\\VALORANT\\live\\VALORANT.exe\"",
         "open riot client": "Start-Process \"C:\\Riot Games\\Riot Client\\RiotClientServices.exe\"",
         "open discord": "Start-Process \"C:\\Users\\dhruv\\AppData\\Local\\Discord\\app-1.0.9179\\Discord.exe\"",        
-        "open settings": "Start-Process ms-settings:"
+        "open settings": "Start-Process ms-settings:",
+        "open powershell": "Start-Process powershell"
     }
 }
