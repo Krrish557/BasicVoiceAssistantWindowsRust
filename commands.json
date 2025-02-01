@@ -1,0 +1,17 @@
+{
+    "commands": {
+        "open spotify": "Start-Process spotify:",
+        "open notepad": "Start-Process notepad",
+        "open calculator": "Start-Process calc",
+        "open opera": "Start-Process opera",
+        "open whatsapp": "Start-Process whatsapp",
+        "open vs code": "Start-Process code",
+        "open this pc": "Start-Process explorer",
+        "open explorer": "Start-Process explorer",
+        "open file manager": "Start-Process explorer",
+        "open valorant": "Start-Process \"C:\\Riot Games\\VALORANT\\live\\VALORANT.exe\"",
+        "open riot client": "Start-Process \"C:\\Riot Games\\Riot Client\\RiotClientServices.exe\"",
+        "open discord": "Start-Process \"C:\\Users\\dhruv\\AppData\\Local\\Discord\\app-1.0.9179\\Discord.exe\"",        
+        "open settings": "Start-Process ms-settings:"
+    }
+}
