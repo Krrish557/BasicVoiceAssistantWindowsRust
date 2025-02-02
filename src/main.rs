@@ -1,22 +1,25 @@
 mod recording;
 mod transcription;
-mod config;
 mod execute;
 use std::error::Error;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let file_path = "./audio/audio.wav";
+
+    // Start Recording
     recording::start_recording(file_path);
-    let audio_url = transcription::upload_audio(file_path)?;
-    let transcription_id = transcription::request_transcription(audio_url)?;
-    let transcription = transcription::get_transcription(transcription_id)?;
-    
-    // Remove punctuations and convert to lowercase
+
+    // Get Offline Transcription
+    let transcription = transcription::get_transcription(file_path)?;
+
+    // Clean Text (remove punctuation, lowercase)
     let cleaned_transcription: String = transcription.chars()
         .filter(|c| !".,?!".contains(*c))
         .collect::<String>()
         .to_lowercase();
-    
+
+    // Execute the Command
     execute::cmd_execute(&cleaned_transcription);
+
     Ok(())
 }

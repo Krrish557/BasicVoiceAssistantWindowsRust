@@ -1,57 +1,36 @@
-use reqwest::blocking::{Client, Response};
-use serde::{Deserialize, Serialize};
+use vosk::{Model, Recognizer};
+use std::fs::File;
+use std::io::BufReader;
 use std::error::Error;
-use std::fs;
-// use crate::config::{API_KEY, UPLOAD_URL, TRANSCRIBE_URL};
+use byteorder::{LittleEndian, ReadBytesExt};
+use serde_json::Value;
 
-#[derive(Serialize)]
-struct TranscriptionRequest {
-    audio_url: String,
-}
+pub fn get_transcription(file_path: &str) -> Result<String, Box<dyn Error>> {
+    let model_path = "./models/vosk-model-small-en-us-0.15";
+    let model = Model::new(model_path).expect("Failed to load Vosk model");
+    let mut recognizer = Recognizer::new(&model, 16000.0).unwrap();
 
-#[derive(Deserialize)]
-struct TranscriptionResponse {
-    id: String,
-}
-
-pub fn upload_audio(file_path: &str) -> Result<String, Box<dyn Error>> {
-    let client = Client::new();
-    let audio_data = fs::read(file_path)?;
-    let response: Response = client
-        .post(UPLOAD_URL)
-        .header("Authorization", API_KEY)
-        .header("Content-Type", "application/octet-stream")
-        .body(audio_data)
-        .send()?;
-    let json_resp: serde_json::Value = response.json()?;
-    Ok(json_resp["upload_url"].as_str().unwrap().to_string())
-}
-
-pub fn request_transcription(audio_url: String) -> Result<String, Box<dyn Error>> {
-    let client = Client::new();
-    let response: TranscriptionResponse = client
-        .post(TRANSCRIBE_URL)
-        .header("Authorization", API_KEY)
-        .header("Content-Type", "application/json")
-        .json(&TranscriptionRequest { audio_url })
-        .send()?
-        .json()?;
-    Ok(response.id)
-}
-
-pub fn get_transcription(transcription_id: String) -> Result<String, Box<dyn Error>> {
-    let client = Client::new();
-    let url = format!("{}/{}", TRANSCRIBE_URL, transcription_id);
-    loop {
-        let response: Response = client.get(&url).header("Authorization", API_KEY).send()?;
-        let json_resp: serde_json::Value = response.json()?;
-        match json_resp["status"].as_str() {
-            Some("completed") => return Ok(json_resp["text"].as_str().unwrap().to_string()),
-            Some("failed") => return Err("Transcription failed".into()),
-            _ => {
-                println!("Waiting for transcription...");
-                std::thread::sleep(std::time::Duration::from_secs(5));
-            }
-        }
+    let file = File::open(file_path)?;
+    let mut reader = BufReader::new(file);
+    
+    // Read 16-bit audio samples
+    let mut buffer = Vec::new();
+    while let Ok(sample) = reader.read_i16::<LittleEndian>() {
+        buffer.push(sample);
     }
+
+    recognizer.accept_waveform(&buffer)?;
+
+    // Get the final result
+    let result = recognizer.final_result();
+
+    // Convert result to a JSON string
+    let result_str = serde_json::to_string(&result).expect("Failed to serialize result");
+
+    // Parse JSON correctly
+    let json: Value = serde_json::from_str(&result_str)?;
+    let transcription = json["text"].as_str().unwrap_or("").to_string();
+
+    Ok(transcription)
 }
+
