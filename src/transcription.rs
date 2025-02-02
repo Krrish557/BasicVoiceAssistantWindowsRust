@@ -2,7 +2,7 @@ use reqwest::blocking::{Client, Response};
 use serde::{Deserialize, Serialize};
 use std::error::Error;
 use std::fs;
-use crate::config::{API_KEY, UPLOAD_URL, TRANSCRIBE_URL};
+// use crate::config::{API_KEY, UPLOAD_URL, TRANSCRIBE_URL};
 
 #[derive(Serialize)]
 struct TranscriptionRequest {
